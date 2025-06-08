@@ -1,14 +1,28 @@
-﻿namespace TestAssignment
+﻿using System.Xml.Linq;
+
+namespace TestAssignment
 {
     public class TelephoneDirectory
     {
+        private struct DirectoryEntry
+        {
+            public string FullName;
+            public string PhoneNumber;
+
+            public DirectoryEntry(string fullName, string phoneNumber)
+            {
+                FullName = fullName;
+                PhoneNumber = phoneNumber;
+            }
+        }
+
         private int _size;
-        private readonly LinkedList<KeyValuePair<string, string>>[] _hashTable;
+        private readonly LinkedList<DirectoryEntry>[] _hashTable;
 
         public TelephoneDirectory(int size)
         {
             _size = size;
-            _hashTable = new LinkedList<KeyValuePair<string, string>>[size];
+            _hashTable = new LinkedList<DirectoryEntry>[size];
 
             for (int i = 0; i < size; i++)
                 _hashTable[i] = new();
@@ -19,16 +33,29 @@
             int hash = GetHash(fullName);
             var bucket = _hashTable[hash];
 
-            foreach (var pair in bucket)
-                if (pair.Key == fullName) 
+            foreach (var entry in bucket)
+                if (entry.FullName == fullName) 
                     return;
 
-            bucket.AddLast(new KeyValuePair<string, string>(fullName, phoneNumber));
+            bucket.AddLast(new DirectoryEntry(fullName, phoneNumber));
         }
 
-        public void DeletePhoneNumber(string fullName)
+        public void DeleteContact(string fullName)
         {
-            EditPhoneNumber(fullName, string.Empty);
+            int hash = GetHash(fullName);
+            var bucket = _hashTable[hash];
+
+            var node = bucket.First;
+            while (node != null)
+            {
+                if (node.Value.FullName == fullName)
+                {
+                    bucket.Remove(node);
+                    return;
+                }
+
+                node = node.Next;
+            }
         }
 
         public void EditPhoneNumber(string fullName, string newPhoneNumber)
@@ -36,14 +63,18 @@
             int hash = GetHash(fullName);
             var bucket = _hashTable[hash];
 
-            foreach (var pair in bucket)
+            var node = bucket.First;
+            while (node != null)
             {
-                if (pair.Key == fullName)
+                if (node.Value.FullName == fullName)
                 {
-                    bucket.AddLast(new KeyValuePair<string, string>(fullName, newPhoneNumber));
-                    bucket.Remove(pair);
-                    break;
+                    var updatedEntry = new DirectoryEntry(node.Value.FullName, newPhoneNumber);
+                    node.Value = updatedEntry;
+
+                    return;
                 }
+
+                node = node.Next;
             }
         }
 
@@ -52,20 +83,21 @@
             int hash = GetHash(fullName);
             var bucket = _hashTable[hash];
 
-            foreach (var pair in bucket)
-                if (pair.Key == fullName)
-                    return pair.Value;
+            foreach (var entry in bucket)
+                if (entry.FullName == fullName)
+                    return entry.PhoneNumber;
 
             return string.Empty;
         }
 
         public void PrintContacts()
         {
+            Console.WriteLine("Contacts list");
             foreach (var bucket in _hashTable)
             {
-                foreach (var pair in bucket)
+                foreach (var entry in bucket)
                 {
-                    Console.WriteLine($"{pair.Key} : {pair.Value}");
+                    Console.WriteLine($"{entry.FullName} : {entry.PhoneNumber}");
                 }
             }
         }

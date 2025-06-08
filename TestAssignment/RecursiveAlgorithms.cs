@@ -4,34 +4,18 @@
     {
         public static int FindFibonacciByPosition(int n)
         {
-            if (n == 1) return 0;
-            if (n == 2) return 1;
+            if (n <= 1) return n;
 
-            int n1 = 0;
-            int n2 = 1;
-            int temp;
-
-            for (int i = 3; i <= n; i++)
-            {
-                temp = n1 + n2;
-                n1 = n2;
-                n2 = temp;
-            }
-
-            return n2;
+            return FindFibonacciByPosition(n - 1) + FindFibonacciByPosition(n - 2);
         }
 
-        public static double Power(double n, int power)
+        public static double Power(double number, int power)
         {
-            if (power == 0) return 1;
-            if (power < 0) 
-                return 1 / Power(n, -power);
-
-            double result = 1;
-            for (int i = 0; i < power; i++)
-                result *= n;
-
-            return result;
+            if (power == 0)
+                return 1;
+            if (power < 0)
+                return 1 / Power(number, -power);
+            return number * Power(number, power - 1);
         }
     }
 }
